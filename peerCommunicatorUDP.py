@@ -143,54 +143,67 @@ def waitToStart():
 
 # From here, code is executed when program starts:
 registerWithGroupManager()
-while 1:
-  print('Waiting for signal to start...')
-  (myself, nMsgs) = waitToStart()
-  print('I am up, and my ID is: ', str(myself))
 
-  if nMsgs == 0:
-    print('Terminating.')
-    exit(0)
+def main():
+    global logicalClock
+    while 1:
+        print('Waiting for signal to start...')
+        (myself, nMsgs) = waitToStart()
+        print('I am up, and my ID is: ', str(myself))
 
-  # Wait for other processes to be ready
-  # To Do: fix bug that causes a failure when not all processes are started within this time
-  # (fully started processes start sending data messages, which the others try to interpret as control messages) 
-  time.sleep(5)
+        if nMsgs == 0:
+            print('Terminating.')
+            exit(0)
 
-  # Create receiving message handler
-  msgHandler = MsgHandler(recvSocket)
-  msgHandler.start()
-  print('Handler started')
+        time.sleep(5)
 
-  PEERS = getListOfPeers()
-  
-  # Send handshakes
-  # To do: Must continue sending until it gets a reply from each process
-  #        Send confirmation of reply
-  for addrToSend in PEERS:
-    print('Sending handshake to ', addrToSend)
-    msg = ('READY', myself)
-    msgPack = pickle.dumps(msg)
-    sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
-    #data = recvSocket.recvfrom(128) # Handshadke confirmations have not yet been implemented
+        # Create receiving message handler
+        msgHandler = MsgHandler(recvSocket)
+        msgHandler.start()
+        print('Handler started')
 
-  print('Main Thread: Sent all handshakes. handShakeCount=', str(handShakeCount))
+        PEERS = getListOfPeers()
+        
+        # Send handshakes
+        for addrToSend in PEERS:
+            print('Sending handshake to ', addrToSend)
+            msg = ('READY', myself)
+            msgPack = pickle.dumps(msg)
+            sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
 
-  while (handShakeCount < N):
-    pass  # find a better way to wait for the handshakes
+        print('Main Thread: Sent all handshakes. Waiting for confirmation...')
 
-  # Send a sequence of data messages to all other processes 
-  for msgNumber in range(0, nMsgs):
-    # Wait some random time between successive messages
-    time.sleep(random.randrange(10,100)/1000)
-    msg = (myself, operations[msgNumber%4])
-    msgPack = pickle.dumps(msg)
-    for addrToSend in PEERS:
-      sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
-      print('Sent message ' + str(msgNumber))
+        while (handShakeCount < N):
+            pass  # wait for the handshakes
 
-  # Tell all processes that I have no more messages to send
-  for addrToSend in PEERS:
-    msg = (-1,-1)
-    msgPack = pickle.dumps(msg)
-    sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
+        # Send a sequence of data messages to all other processes 
+        for msgNumber in range(0, nMsgs):
+            # Wait some random time between successive messages
+            time.sleep(random.randrange(10,100)/1000)
+            
+            # -----------------------------------------------------------------
+            # IMPLEMENTAÇÃO DO RELÓGIO DE LAMPORT NO ENVIO
+            # -----------------------------------------------------------------
+            # 1. Incrementar o relógio antes de enviar (Regra 2)
+            logicalClock = logicalClock + 1
+            
+            # 2. Carimbar a mensagem com (process_id, timestamp, operation_data)
+            op_data = operations[msgNumber%4]
+            msg = (myself, logicalClock, op_data) # NOVO FORMATO
+            # -----------------------------------------------------------------
+            
+            msgPack = pickle.dumps(msg)
+            
+            for addrToSend in PEERS:
+                sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
+                print(f'P{myself} Sent message {msgNumber} (Clock: {logicalClock})')
+
+        # Tell all processes that I have no more messages to send
+        for addrToSend in PEERS:
+            msg = (-1,-1)
+            msgPack = pickle.dumps(msg)
+            sendSocket.sendto(msgPack, (addrToSend,PEER_UDP_PORT))
+
+
+if __name__ == "__main__":
+    main()
