@@ -1,6 +1,6 @@
 # Distributed Database Replication - Multicast communication with Lamport Clock
 
-**Evoluções **
+**Evoluções**
 
 **Implementadas no Trabalho de Sistema Distribuído \(Parte 3\)** **Mecanismo de Coordenação Baseado em Ordenação Total** A Parte 3 do trabalho focou na implementação de um mecanismo de coordenação, conforme solicitado, para garantir a consistência entre as réplicas da base de dados, superando a limitação de falta de consistência observada na Parte 1. Este mecanismo baseia-se na **ordenação total de mensagens**, utilizando **relógios lógicos escalares \(Lamport\)** e uma heurística de desempate. 
 
@@ -12,7 +12,7 @@ Antes de enviar uma mensagem, o relógio lógico é incrementado \(**Regra 2**\)
 
 O formato da mensagem foi adaptado para incluir esse *timestamp* junto com o **ID do processo** **remetente** e os **dados da operação**. 
 
-● **Formato da mensagem enviada: **
+● **Formato da mensagem enviada:**
 
 \(myself, logicalClock, op\_data\) 
 
@@ -20,23 +20,23 @@ O formato da mensagem foi adaptado para incluir esse *timestamp* junto com o **I
 
 ● Os dados da operação \(op\_data\) continuam sendo as operações de banco de dados definidas na Parte 1: 
 
-**insert, delete, update, query **
+**insert, delete, update, query**
 
 ****
 
 
 
-**1.2. Na Recepção de Mensagens **
+**1.2. Na Recepção de Mensagens**
 
 Ao receber uma mensagem, o processo segue as **Regras 3a e 3b** para manter a consistência do tempo lógico: 
 
-1. **Atualização para o máximo: **
+1. **Atualização para o máximo:**
 
 logicalClock = max\(logicalClock, received\_timestamp\) 
 
 
 
-2. **Incremento local: **
+2. **Incremento local:**
 
 Após a atualização, o relógio local é incrementado em 1. 
 
@@ -46,7 +46,7 @@ Após a atualização, o relógio local é incrementado em 1.
 
 **2. Mecanismo de Entrega Ordenada \(Fila de Prioridade\)** As mensagens recebidas **não são aplicadas imediatamente**; em vez disso, são armazenadas em uma **fila de prioridade \(deliveryQueue\)**. 
 
-● **Estrutura da Fila: **
+● **Estrutura da Fila:**
 
 A fila armazena tuplas no formato: 
 
@@ -54,7 +54,7 @@ A fila armazena tuplas no formato:
 
 
 
-● **Ordenação: **
+● **Ordenação:**
 
 A fila é ordenada **estritamente** usando: **1ª chave:** timestamp 
 
@@ -62,13 +62,13 @@ A fila é ordenada **estritamente** usando: **1ª chave:** timestamp
 
 
 
-● **Heurística de Desempate: **
+● **Heurística de Desempate:**
 
 Necessária porque dois processos podem gerar mensagens com o mesmo timestamp. 
 
 
 
-● **Entrega Final: **
+● **Entrega Final:**
 
 As mensagens só são entregues ao log \(logList\) **após o processo receber a** **notificação de parada** \(stop message = -1\) de **todos os outros processos \(N\)**. 
 
@@ -80,29 +80,29 @@ Isso garante que **todas as mensagens candidatas** à ordenação total estejam 
 
 **3. Verificação de Eficácia no Comparison Server \(PT3\)** O Comparison Server na Parte 3 \(comparisonServerPT3\) foi ajustado para medir a eficácia da ordenação total e confirmar a consistência das réplicas. 
 
-● **Log Esperado: **
+● **Log Esperado:**
 
-O servidor espera receber um log de cada peer, cujo tamanho deve ser: **N × N\_MSGS **
+O servidor espera receber um log de cada peer, cujo tamanho deve ser: **N × N\_MSGS**
 
 ****
 
-● **Processo de Comparação: **
+● **Processo de Comparação:**
 
 A lógica compara a *j-ésima* mensagem do **Peer 0** com a *j-ésima* de todos os outros peers. 
 
 
 
-● **Resultado da Consistência: **
+● **Resultado da Consistência:**
 
 A variável unordered conta quantas posições diferem. 
 
 
 
-○ **Consistência Garantida:** unordered == 0 → *“Todos os Peers têm a mesma ordem total de* *mensagens” *
+○ **Consistência Garantida:** unordered == 0 → **“Todos os Peers têm a mesma ordem total de mensagens”**
 
 * *
 
-○ **Inconsistência Detectada: **
+○ **Inconsistência Detectada:**
 
 unordered > 0 → existe divergência. 
 
