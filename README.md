@@ -115,16 +115,3 @@ A implementação do relógio lógico e da fila de entrega ordenada busca demons
 
 
 
-
-# Document Outline
-
-+ Descrição das Modificações e Evoluções Implementadas no Sistema Distribuído \(Parte 3\)   
-	+ Mecanismo de Coordenação Baseado em Ordenação Total  
-	+ 1. Implementação do Relógio Lógico de Lamport   
-		+ 1.1. No Envio de Mensagens  
-		+ 1.2. Na Recepção de Mensagens  
-
-	+ 2. Mecanismo de Entrega Ordenada \(Fila de Prioridade\)  
-	+ 3. Verificação de Eficácia no Comparison Server \(PT3\)
-
-
