@@ -1,12 +1,10 @@
 # Distributed Database Replication - Multicast communication with Lamport Clock
 
-**Evoluções**
-
 **Implementadas no Trabalho de Sistema Distribuído \(Parte 3\)** **Mecanismo de Coordenação Baseado em Ordenação Total** A Parte 3 do trabalho focou na implementação de um mecanismo de coordenação, conforme solicitado, para garantir a consistência entre as réplicas da base de dados, superando a limitação de falta de consistência observada na Parte 1. Este mecanismo baseia-se na **ordenação total de mensagens**, utilizando **relógios lógicos escalares \(Lamport\)** e uma heurística de desempate. 
 
 
 
-**1. Implementação do Relógio Lógico de Lamport** Para permitir a ordenação total, foi introduzido o conceito de **tempo lógico**, com a variável global logicalClock inicializada a zero em cada processo. As regras de atualização do relógio foram aplicadas estritamente durante o envio e a recepção de mensagens: **1.1. No Envio de Mensagens **
+**1. Implementação do Relógio Lógico de Lamport** Para permitir a ordenação total, foi introduzido o conceito de **tempo lógico**, com a variável global logicalClock inicializada a zero em cada processo. As regras de atualização do relógio foram aplicadas estritamente durante o envio e a recepção de mensagens: **1.1. No Envio de Mensagens**
 
 Antes de enviar uma mensagem, o relógio lógico é incrementado \(**Regra 2**\). 
 
@@ -76,8 +74,6 @@ Isso garante que **todas as mensagens candidatas** à ordenação total estejam 
 
 
 
-
-
 **3. Verificação de Eficácia no Comparison Server \(PT3\)** O Comparison Server na Parte 3 \(comparisonServerPT3\) foi ajustado para medir a eficácia da ordenação total e confirmar a consistência das réplicas. 
 
 ● **Log Esperado:**
@@ -91,16 +87,13 @@ O servidor espera receber um log de cada peer, cujo tamanho deve ser: **N × N\_
 A lógica compara a *j-ésima* mensagem do **Peer 0** com a *j-ésima* de todos os outros peers. 
 
 
-
 ● **Resultado da Consistência:**
 
 A variável unordered conta quantas posições diferem. 
 
 
-
 ○ **Consistência Garantida:** unordered == 0 → **“Todos os Peers têm a mesma ordem total de mensagens”**
 
-* *
 
 ○ **Inconsistência Detectada:**
 
